@@ -5,6 +5,12 @@ namespace Gameplay
 {
     namespace Collection
     {
+        enum class SortState
+        {
+            SORTING,
+            NOT_SORTING,
+        };
+
         enum class SortType
         {
             BUBBLE_SORT,
@@ -28,6 +34,8 @@ namespace Gameplay
             const sf::Color processing_element_color = sf::Color::Red;
             const sf::Color placement_position_element_color = sf::Color::Green;
             const sf::Color selected_element_color = sf::Color::Blue;
+
+            const long initial_color_delay = 40;
 
             const long operation_delay = 150;
 

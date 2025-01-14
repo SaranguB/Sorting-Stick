@@ -5,6 +5,12 @@ namespace Gameplay
 {
     namespace Collection
     {
+        enum class SortState
+        {
+            SORTING,
+            NOT_SORTING,
+        };
+
         enum class SortType
         {
             BUBBLE_SORT,

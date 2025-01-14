@@ -4,6 +4,7 @@
 #include "Gameplay/GameplayService.h"
 #include "Global/ServiceLocator.h"
 #include "Gameplay/Collection/Stick.h"
+#include "Global/Config.h"
 #include <random>
 
 namespace Gameplay
@@ -13,6 +14,7 @@ namespace Gameplay
 		using namespace UI::UIElement;
 		using namespace Global;
 		using namespace Graphics;
+		using namespace Sound;
 
 		StickCollectionController::StickCollectionController()
 		{
@@ -29,6 +31,7 @@ namespace Gameplay
 
 		void StickCollectionController::initialize()
 		{
+			sortState = SortState::NOT_SORTING;
 			collection_view->initialize(this);
 			initializeSticks();
 			reset();
@@ -114,7 +117,14 @@ namespace Gameplay
 
 		void StickCollectionController::processSortThreadState()
 		{
-			if (sort_thread.joinable() && isCollectionSorted()) sort_thread.join();
+
+			if (sort_thread.joinable() && isCollectionSorted())
+			{
+				sort_thread.join();
+				sortState = SortState::NOT_SORTING;
+
+			}
+
 		}
 
 
@@ -133,7 +143,7 @@ namespace Gameplay
 		{
 			current_operation_delay = 0;
 			if (sort_thread.joinable()) sort_thread.join();
-
+			sortState = SortState::NOT_SORTING;
 			shuffleSticks();
 			resetSticksColor();
 			resetVariables();
@@ -144,12 +154,13 @@ namespace Gameplay
 			current_operation_delay = collection_model->operation_delay;
 			this->sort_type = sort_type;
 
-			/*switch (sort_type)
+			switch (sort_type)
 			{
 			case Gameplay::Collection::SortType::BUBBLE_SORT:
-				sort_thread = std::thread(&StickCollectionController::processBubbleSort, this);
+				sortState = SortState::NOT_SORTING;
+				sort_thread = std::thread(&StickCollectionController::ProcessBubbleSort, this);
 				break;
-			}*/
+			}
 		}
 
 		bool StickCollectionController::isCollectionSorted()
@@ -170,18 +181,62 @@ namespace Gameplay
 			delete (collection_model);
 		}
 
-		SortType StickCollectionController::getSortType() { return sort_type; }
+		void StickCollectionController::ProcessBubbleSort()
+		{
+			SoundService* sound = ServiceLocator::getInstance()->getSoundService();
 
-		int StickCollectionController::getNumberOfComparisons() { return number_of_comparisons; }
+			for (int i = 0; i < sticks.size() - 1;i++)
+			{
+				if (sortState == SortState::NOT_SORTING)break;
 
-		int StickCollectionController::getNumberOfArrayAccess() { return number_of_array_access; }
+				bool swapped = false;
 
-		int StickCollectionController::getNumberOfSticks() { return collection_model->number_of_elements; }
+				for (int j = 0; j < sticks.size() - i - 1;j++)
+				{
+					if (sortState == SortState::NOT_SORTING)
+					{
+						number_of_array_access++;
+						number_of_comparisons++;
+						
 
-		int StickCollectionController::getDelayMilliseconds() { return current_operation_delay; }
+						sound->playSound(SoundType::COMPARE_SFX);
 
-		sf::String StickCollectionController::getTimeComplexity() { return time_complexity; }
+						sticks[j]->stick_view->setFillColor(collection_model->processing_element_color);
+						sticks[j + 1]->stick_view->setFillColor(collection_model->processing_element_color);
+
+						if (sticks[j]->data > sticks[j + 1]->data)
+						{
+							std::swap(sticks[j], sticks[j + 1]);
+							swapped = true;
+						}
+						std::this_thread::sleep_for(std::chrono::milliseconds(current_operation_delay));
+
+						sticks[i - 1]->stick_view->setFillColor(collection_model->element_color);
+						sticks[i]->stick_view->setFillColor(collection_model->element_color);
+						updateStickPosition();
+					}
+
+					if (sticks.size() - i - 1 >= 0) {
+						sticks[sticks.size() - i - 1]->stick_view->setFillColor(collection_model->placement_position_element_color);
+					}
+
+				}
+				if (!swapped)break;
+
+			}
+		}
 	}
-}
 
+	SortType StickCollectionController::getSortType() { return sort_type; }
+
+	int StickCollectionController::getNumberOfComparisons() { return number_of_comparisons; }
+
+	int StickCollectionController::getNumberOfArrayAccess() { return number_of_array_access; }
+
+	int StickCollectionController::getNumberOfSticks() { return collection_model->number_of_elements; }
+
+	int StickCollectionController::getDelayMilliseconds() { return current_operation_delay; }
+
+	sf::String StickCollectionController::getTimeComplexity() { return time_complexity; }
+}
 

@@ -161,6 +161,7 @@ namespace Gameplay
 			switch (sort_type)
 			{
 			case Gameplay::Collection::SortType::BUBBLE_SORT:
+				time_complexity = "O(n^2)";
 				sort_thread = std::thread(&StickCollectionController::ProcessBubbleSort, this);
 				break;
 			}
@@ -192,9 +193,9 @@ namespace Gameplay
 			{
 				if (sortState == SortState::NOT_SORTING) { break; }
 
-				bool swapped = false;  // To track if a swap was made
+				bool swapped = false; 
 
-				for (int i = 1; i < sticks.size() - j; i++)  // Reduce the range each pass
+				for (int i = 1; i < sticks.size() - j; i++)  
 				{
 
 					if (sortState == SortState::NOT_SORTING) { break; }

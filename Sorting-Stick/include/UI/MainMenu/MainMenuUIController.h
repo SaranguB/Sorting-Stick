@@ -61,6 +61,7 @@ namespace UI
 			~MainMenuUIController();
 
 			void initialize() override;
+			void changeGameStateToGameplay();
 			void update() override;
 			void render() override;
 			void show() override;

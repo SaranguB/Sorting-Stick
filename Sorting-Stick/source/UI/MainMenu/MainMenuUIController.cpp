@@ -15,6 +15,7 @@ namespace UI
         using namespace UIElement;
         using namespace Sound;
         using namespace Graphics;
+        using namespace Sound;
 
         MainMenuUIController::MainMenuUIController()
         {
@@ -74,7 +75,7 @@ namespace UI
         void MainMenuUIController::registerButtonCallback()
         {
             bubble_sort_button->registerCallbackFuntion(std::bind(&MainMenuUIController::bubbleSortButtonCallback, this));
-            //insertion_sort_button->registerCallbackFuntion(std::bind(&MainMenuUIController::insertionSortButtonCallback, this));
+            insertion_sort_button->registerCallbackFuntion(std::bind(&MainMenuUIController::insertionSortButtonCallback, this));
             //selection_sort_button->registerCallbackFuntion(std::bind(&MainMenuUIController::selectionSortButtonCallback, this));
             //merge_sort_button->registerCallbackFuntion(std::bind(&MainMenuUIController::mergeSortButtonCallback, this));
             //quick_sort_button->registerCallbackFuntion(std::bind(&MainMenuUIController::quickSortButtonCallback, this));
@@ -84,11 +85,14 @@ namespace UI
 
         void MainMenuUIController::bubbleSortButtonCallback()
         {
-            ServiceLocator::getInstance()->getSoundService()->playSound(SoundType::BUTTON_CLICK);
+          
+            changeGameStateToGameplay();
+            ServiceLocator::getInstance()->getGameplayService()->sortElement(Gameplay::Collection::SortType::BUBBLE_SORT);
         }
 
         void MainMenuUIController::insertionSortButtonCallback()
         {
+            changeGameStateToGameplay();
             ServiceLocator::getInstance()->getSoundService()->playSound(SoundType::BUTTON_CLICK);
         }
 
@@ -115,6 +119,12 @@ namespace UI
         void MainMenuUIController::quitButtonCallback()
         {
             ServiceLocator::getInstance()->getGraphicService()->getGameWindow()->close();
+        }
+
+        void MainMenuUIController::changeGameStateToGameplay()
+        {
+            ServiceLocator::getInstance()->getSoundService()->playSound(SoundType::BUTTON_CLICK);
+            GameService::setGameState(GameState::GAMEPLAY);
         }
 
         void MainMenuUIController::update()

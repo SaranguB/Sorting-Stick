@@ -29,6 +29,8 @@ namespace Gameplay
             int number_of_array_access;
             int current_operation_delay;
 
+            int colorDelay;
+
             int delay_in_ms;
             sf::String time_complexity;
 
@@ -49,6 +51,7 @@ namespace Gameplay
             void destroy();
 
             void ProcessBubbleSort();
+            void SetCompletedColor();
 
         public:
             StickCollectionController();

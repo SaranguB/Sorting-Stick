@@ -5,6 +5,7 @@
 #include "Global/ServiceLocator.h"
 #include "Gameplay/Collection/Stick.h"
 #include "Global/Config.h"
+#include "Sound/SoundService.h"
 #include <random>
 
 namespace Gameplay
@@ -141,6 +142,7 @@ namespace Gameplay
 
 		void StickCollectionController::reset()
 		{
+			colorDelay = 0;
 			current_operation_delay = 0;
 			if (sort_thread.joinable()) sort_thread.join();
 			sortState = SortState::NOT_SORTING;
@@ -151,13 +153,15 @@ namespace Gameplay
 
 		void StickCollectionController::sortElements(SortType sort_type)
 		{
+			colorDelay = collection_model->initial_color_delay;
 			current_operation_delay = collection_model->operation_delay;
 			this->sort_type = sort_type;
+			sortState = SortState::SORTING;
 
 			switch (sort_type)
 			{
 			case Gameplay::Collection::SortType::BUBBLE_SORT:
-				sortState = SortState::NOT_SORTING;
+				time_complexity = "O(n^2)";
 				sort_thread = std::thread(&StickCollectionController::ProcessBubbleSort, this);
 				break;
 			}
@@ -183,47 +187,70 @@ namespace Gameplay
 
 		void StickCollectionController::ProcessBubbleSort()
 		{
-			SoundService* sound = ServiceLocator::getInstance()->getSoundService();
 
-			for (int i = 0; i < sticks.size() - 1;i++)
+			SoundService* sound = Global::ServiceLocator::getInstance()->getSoundService();
+			for (int j = 0; j < sticks.size(); j++)
 			{
-				if (sortState == SortState::NOT_SORTING)break;
+				if (sortState == SortState::NOT_SORTING) { break; }
 
-				bool swapped = false;
+				bool swapped = false; 
 
-				for (int j = 0; j < sticks.size() - i - 1;j++)
+				for (int i = 1; i < sticks.size() - j; i++)  
 				{
-					if (sortState == SortState::NOT_SORTING)
-					{
-						number_of_array_access++;
-						number_of_comparisons++;
-						
 
-						sound->playSound(SoundType::COMPARE_SFX);
+					if (sortState == SortState::NOT_SORTING) { break; }
 
-						sticks[j]->stick_view->setFillColor(collection_model->processing_element_color);
-						sticks[j + 1]->stick_view->setFillColor(collection_model->processing_element_color);
+					number_of_array_access += 2;
+					number_of_comparisons++;
+					sound->playSound(SoundType::COMPARE_SFX);
 
-						if (sticks[j]->data > sticks[j + 1]->data)
-						{
-							std::swap(sticks[j], sticks[j + 1]);
-							swapped = true;
-						}
-						std::this_thread::sleep_for(std::chrono::milliseconds(current_operation_delay));
+					sticks[i - 1]->stick_view->setFillColor(collection_model->processing_element_color);
+					sticks[i]->stick_view->setFillColor(collection_model->processing_element_color);
 
-						sticks[i - 1]->stick_view->setFillColor(collection_model->element_color);
-						sticks[i]->stick_view->setFillColor(collection_model->element_color);
-						updateStickPosition();
+					if (sticks[i - 1]->data > sticks[i]->data) {
+						std::swap(sticks[i - 1], sticks[i]);
+						swapped = true; 
 					}
+					std::this_thread::sleep_for(std::chrono::milliseconds(current_operation_delay));
 
-					if (sticks.size() - i - 1 >= 0) {
-						sticks[sticks.size() - i - 1]->stick_view->setFillColor(collection_model->placement_position_element_color);
-					}
-
+					sticks[i - 1]->stick_view->setFillColor(collection_model->element_color);
+					sticks[i]->stick_view->setFillColor(collection_model->element_color);
+					updateStickPosition();
 				}
-				if (!swapped)break;
+				
+				if (sticks.size() - j - 1 >= 0) {
+					sticks[sticks.size() - j - 1]->stick_view->setFillColor(collection_model->placement_position_element_color);
+				}
+				
+				if (!swapped)
+					break;
+			}
+
+			SetCompletedColor();
+
+		}
+
+		void StickCollectionController::SetCompletedColor()
+		{
+			for (int i = 0; i < sticks.size(); i++)
+			{
+				if (sortState == SortState::NOT_SORTING) { break; }
+
+				sticks[i]->stick_view->setFillColor(collection_model->element_color);
+			}
+			SoundService* sound = Global::ServiceLocator::getInstance()->getSoundService();
+
+			for (int i = 0; i < sticks.size(); ++i)
+			{
+
+				sound->playSound(SoundType::COMPARE_SFX);
+				sticks[i]->stick_view->setFillColor(collection_model->placement_position_element_color);
+
+				
+				std::this_thread::sleep_for(std::chrono::milliseconds(colorDelay));
 
 			}
+
 		}
 	}
 

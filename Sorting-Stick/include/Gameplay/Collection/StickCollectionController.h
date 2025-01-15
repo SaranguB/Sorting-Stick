@@ -51,6 +51,8 @@ namespace Gameplay
             void destroy();
 
             void ProcessBubbleSort();
+            void ProcessInsertionSort();
+
             void SetCompletedColor();
 
         public:

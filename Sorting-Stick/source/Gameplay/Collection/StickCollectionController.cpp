@@ -170,7 +170,7 @@ namespace Gameplay
 				sort_thread = std::thread(&StickCollectionController::ProcessInsertionSort, this);
 				break;
 			case Gameplay::Collection::SortType::SELECTION_SORT:
-				//time_complexity = "O(n^2)";
+				time_complexity = "O(n^2)";
 				sort_thread = std::thread(&StickCollectionController::ProcessSelectionSort, this);
 				break;
 			}
@@ -250,8 +250,8 @@ namespace Gameplay
 				int j = i - 1;
 				Stick* key = sticks[i];
 
-				number_of_array_access ++;
-				
+				number_of_array_access++;
+
 
 				key->stick_view->setFillColor(collection_model->processing_element_color);
 				std::this_thread::sleep_for(std::chrono::milliseconds(current_operation_delay));
@@ -260,7 +260,7 @@ namespace Gameplay
 				{
 					if (sortState == SortState::NOT_SORTING)break;
 
-					number_of_array_access ++;
+					number_of_array_access++;
 					number_of_comparisons++;
 
 					sticks[j + 1] = sticks[j];
@@ -299,14 +299,16 @@ namespace Gameplay
 			for (int i = 0; i < sticks.size();i++)
 			{
 				if (sortState == SortState::NOT_SORTING)break;
-				
+
 				int minIndex = i;
 
 				sticks[i]->stick_view->setFillColor(collection_model->selected_element_color);
 
-				for (int j = i + 1;i < sticks.size();i++)
+				for (int j = i + 1;j < sticks.size();j++)
 				{
-					number_of_array_access++;
+					if (sortState == SortState::NOT_SORTING)break;
+
+					number_of_array_access += 2;
 					number_of_comparisons++;
 
 					sound->playSound(SoundType::COMPARE_SFX);
@@ -314,9 +316,9 @@ namespace Gameplay
 
 					std::this_thread::sleep_for(std::chrono::milliseconds(current_operation_delay));
 
-					if (sticks[j] < sticks[minIndex])
+					if (sticks[j]->data < sticks[minIndex]->data)
 					{
-						sticks[minIndex]->stick_view->setFillColor(collection_model->element_color);
+						if (minIndex != i)sticks[minIndex]->stick_view->setFillColor(collection_model->element_color);
 
 						minIndex = j;
 						sticks[minIndex]->stick_view->setFillColor(collection_model->temporary_processing_color);
@@ -327,21 +329,17 @@ namespace Gameplay
 
 					}
 				}
-				if (minIndex != i)
-				{
-					Stick* temp = sticks[i];
-					sticks[i] = sticks[minIndex];
-					sticks[minIndex] = temp;
+				
+				number_of_array_access += 3;
 
-				}
-				number_of_array_access++;
-				number_of_comparisons++;
+				std::swap(sticks[minIndex], sticks[i]);
+
 				sticks[i]->stick_view->setFillColor(collection_model->placement_position_element_color);
 				updateStickPosition();
 
 			}
-			sticks[]->stick_view->setFillColor(collection_model->element_color);
-			ProcessSelectionSort();
+			sticks[sticks.size() -1]->stick_view->setFillColor(collection_model->element_color);
+			SetCompletedColor();
 
 		}
 

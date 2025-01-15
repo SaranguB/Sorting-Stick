@@ -166,6 +166,7 @@ namespace Gameplay
 				break;
 
 			case Gameplay::Collection::SortType::INSERTION_SORT:
+				time_complexity = "O(n^2)";
 				sort_thread = std::thread(&StickCollectionController::ProcessInsertionSort, this);
 				break;
 			}
@@ -243,36 +244,48 @@ namespace Gameplay
 				if (sortState == SortState::NOT_SORTING)break;
 
 				int j = i - 1;
-				int key = sticks[i]->data;
+				Stick* key = sticks[i];
 
-				number_of_array_access += 2;
-				number_of_comparisons++;
+				number_of_array_access ++;
+				
 
-				sticks[i]->stick_view->setFillColor(collection_model->processing_element_color);
+				key->stick_view->setFillColor(collection_model->processing_element_color);
 				std::this_thread::sleep_for(std::chrono::milliseconds(current_operation_delay));
 
-				while (j >= 0 && sticks[j]->data > key)
+				while (j >= 0 && sticks[j]->data > key->data)
 				{
 					if (sortState == SortState::NOT_SORTING)break;
 
-					number_of_array_access += 2;
+					number_of_array_access ++;
 					number_of_comparisons++;
 
 					sticks[j + 1] = sticks[j];
+					number_of_array_access++;
+
 					sticks[j + 1]->stick_view->setFillColor(collection_model->processing_element_color);
+					j--;
 
 					sound->playSound(SoundType::COMPARE_SFX);
 					updateStickPosition();
+
 					std::this_thread::sleep_for(std::chrono::milliseconds(current_operation_delay));
-					sticks[j + 1]->stick_view->setFillColor(collection_model->selected_element_color);
-					j--;
+
+					sticks[j + 2]->stick_view->setFillColor(collection_model->selected_element_color);
 
 
 				}
-				sticks[j + 1]->data = key;
-				sticks[j + 1]->stick_view->setFillColor(collection_model->temporary);
+				sticks[j + 1] = key;
+				number_of_array_access++;
+
+				sticks[j + 1]->stick_view->setFillColor(collection_model->temporary_processing_color);
+				sound->playSound(SoundType::COMPARE_SFX);
+
+				std::this_thread::sleep_for(std::chrono::milliseconds(current_operation_delay));
+				updateStickPosition();
+				sticks[j + 1]->stick_view->setFillColor(collection_model->selected_element_color);
 
 			}
+			SetCompletedColor();
 		}
 
 		void StickCollectionController::SetCompletedColor()

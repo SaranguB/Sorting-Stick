@@ -93,7 +93,8 @@ namespace UI
         void MainMenuUIController::insertionSortButtonCallback()
         {
             changeGameStateToGameplay();
-            ServiceLocator::getInstance()->getSoundService()->playSound(SoundType::BUTTON_CLICK);
+            ServiceLocator::getInstance()->getGameplayService()->sortElement(Gameplay::Collection::SortType::INSERTION_SORT);
+
         }
 
         void MainMenuUIController::selectionSortButtonCallback()

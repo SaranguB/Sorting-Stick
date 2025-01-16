@@ -51,8 +51,13 @@ namespace Gameplay
             void destroy();
 
             void ProcessBubbleSort();
+            
             void ProcessInsertionSort();
+
             void ProcessSelectionSort();
+
+            void ProcessInPlaceMergeSort();
+            void InPlaceMerge(int left, int mid,int right);
 
             void SetCompletedColor();
 

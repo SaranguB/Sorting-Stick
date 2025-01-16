@@ -173,6 +173,10 @@ namespace Gameplay
 				time_complexity = "O(n^2)";
 				sort_thread = std::thread(&StickCollectionController::ProcessSelectionSort, this);
 				break;
+			case Gameplay::Collection::SortType::MERGE_SORT:
+				time_complexity = "O(n^2)";
+				sort_thread = std::thread(&StickCollectionController::ProcessInPlaceMergeSort, this);
+				break;
 			}
 		}
 
@@ -329,7 +333,7 @@ namespace Gameplay
 
 					}
 				}
-				
+
 				number_of_array_access += 3;
 
 				std::swap(sticks[minIndex], sticks[i]);
@@ -338,9 +342,79 @@ namespace Gameplay
 				updateStickPosition();
 
 			}
-			sticks[sticks.size() -1]->stick_view->setFillColor(collection_model->element_color);
+			sticks[sticks.size() - 1]->stick_view->setFillColor(collection_model->element_color);
 			SetCompletedColor();
 
+		}
+
+		void StickCollectionController::ProcessInPlaceMergeSort()
+		{
+			InPlaceMergeSort(0, sticks.size() -1);
+		}
+
+		void StickCollectionController::InPlaceMerge(int left, int mid, int right)
+		{
+			SoundService* sound = Global::ServiceLocator::getInstance()->getSoundService();
+
+			int start2 = mid + 1;
+
+			if (sticks[mid]->data <= sticks[start2]->data)
+			{
+				number_of_array_access += 2;
+				number_of_comparisons++;
+				return;
+			}
+
+			while (left <= mid && start2 <= right)
+			{
+				number_of_comparisons++;
+				number_of_array_access++;
+
+				if (sticks[left]->data <= sticks[start2]->data)
+				{
+					left++;
+				}
+				else
+				{
+					Stick* value = sticks[start2];
+					int index = start2;
+
+					while (left < index)
+					{
+						sticks[start2] = sticks[start2 - 1];
+						index--;
+					}
+
+					sticks[left] == value;
+					number_of_array_access++;
+
+					left++;
+					mid++;
+					start2++;
+
+					updateStickPosition();
+
+					sound->playSound(SoundType::COMPARE_SFX);
+
+					sticks[left -1]->stick_view->setFillColor(collection_model->processing_element_color);
+					std::this_thread::sleep_for(std::chrono::milliseconds(current_operation_delay));
+					sticks[left]->stick_view->setFillColor(collection_model->element_color);
+
+
+				}
+			}
+			SetCompletedColor();
+		}
+
+		void StickCollectionController::InPlaceMergeSort(int left, int right)
+		{
+			if (left >= right)return;
+
+			int mid = left + (right - left) / 2;
+
+			InPlaceMergeSort(left, mid);
+			InPlaceMergeSort(mid + 1, right);
+			InPlaceMerge(left, mid, right);
 		}
 
 		void StickCollectionController::SetCompletedColor()

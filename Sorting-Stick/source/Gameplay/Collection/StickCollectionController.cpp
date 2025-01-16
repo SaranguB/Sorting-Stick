@@ -349,7 +349,9 @@ namespace Gameplay
 
 		void StickCollectionController::ProcessInPlaceMergeSort()
 		{
+			//printf("hi");
 			InPlaceMergeSort(0, sticks.size() -1);
+			SetCompletedColor();
 		}
 
 		void StickCollectionController::InPlaceMerge(int left, int mid, int right)
@@ -368,7 +370,7 @@ namespace Gameplay
 			while (left <= mid && start2 <= right)
 			{
 				number_of_comparisons++;
-				number_of_array_access++;
+				number_of_array_access+=2;
 
 				if (sticks[left]->data <= sticks[start2]->data)
 				{
@@ -379,13 +381,15 @@ namespace Gameplay
 					Stick* value = sticks[start2];
 					int index = start2;
 
-					while (left < index)
+					while (left != index)
 					{
-						sticks[start2] = sticks[start2 - 1];
+						sticks[index] = sticks[index - 1];
 						index--;
+						number_of_array_access+=2;
+
 					}
 
-					sticks[left] == value;
+					sticks[left] = value;
 					number_of_array_access++;
 
 					left++;
@@ -394,16 +398,15 @@ namespace Gameplay
 
 					updateStickPosition();
 
-					sound->playSound(SoundType::COMPARE_SFX);
-
-					sticks[left -1]->stick_view->setFillColor(collection_model->processing_element_color);
-					std::this_thread::sleep_for(std::chrono::milliseconds(current_operation_delay));
-					sticks[left]->stick_view->setFillColor(collection_model->element_color);
-
-
+					
 				}
+				sound->playSound(SoundType::COMPARE_SFX);
+
+				sticks[left - 1]->stick_view->setFillColor(collection_model->processing_element_color);
+				std::this_thread::sleep_for(std::chrono::milliseconds(current_operation_delay));
+				sticks[left - 1]->stick_view->setFillColor(collection_model->element_color);
 			}
-			SetCompletedColor();
+			
 		}
 
 		void StickCollectionController::InPlaceMergeSort(int left, int right)

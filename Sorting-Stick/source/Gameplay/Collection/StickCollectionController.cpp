@@ -103,6 +103,14 @@ namespace Gameplay
 			}
 		}
 
+		void StickCollectionController::updateStickPosition(int i)
+		{
+			float x_position = (i * sticks[i]->stick_view->getSize().x) + ((i + 1) * collection_model->elements_spacing);
+			float y_position = collection_model->element_y_position - sticks[i]->stick_view->getSize().y;
+
+			sticks[i]->stick_view->setPosition(sf::Vector2f(x_position, y_position));
+		}
+
 		void StickCollectionController::shuffleSticks()
 		{
 			std::random_device device;
@@ -181,6 +189,10 @@ namespace Gameplay
 			case Gameplay::Collection::SortType::QUICK_SORT:
 				time_complexity = "O(n Log n)";
 				sort_thread = std::thread(&StickCollectionController::ProcessQuickSort, this);
+				break;
+			case Gameplay::Collection::SortType::RADIX_SORT:
+				time_complexity = "O(n Log n)";
+				sort_thread = std::thread(&StickCollectionController::ProcessRadixSort, this);
 				break;
 			}
 		}
@@ -496,6 +508,10 @@ namespace Gameplay
 				sticks[i]->stick_view->setFillColor(collection_model->placement_position_element_color);
 				updateStickPosition();
 			}
+		}
+
+		void StickCollectionController::ProcessRadixSort()
+		{
 		}
 
 		void StickCollectionController::InPlaceMerge(int left, int mid, int right)

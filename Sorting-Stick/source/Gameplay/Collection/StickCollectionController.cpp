@@ -447,23 +447,26 @@ namespace Gameplay
 			sticks[right]->stick_view->setFillColor(collection_model->selected_element_color);
 
 			int i = left - 1;
-			Stick* pivot = sticks[sticks.size() - 1];
-			for (int j = left; j <= right - 1;j++)
-			{
-				sticks[j]->stick_view->setFillColor(collection_model->selected_element_color);
 
-				number_of_array_access++;
+
+			//Stick* pivot = sticks[sticks.size() - 1];
+
+			for (int j = left; j < right;j++)
+			{
+				sticks[j]->stick_view->setFillColor(collection_model->processing_element_color);
+
+				number_of_array_access+=2;
 				number_of_comparisons++;
 
-				if (sticks[i]->data <= pivot->data)
+				if (sticks[j]->data < sticks[right]->data)
 				{
 					i++;
 					std::swap(sticks[i], sticks[j]);
-					updateStickPosition();
+					number_of_array_access += 3;
 					sound->playSound(SoundType::COMPARE_SFX);
+
+					updateStickPosition();
 					std::this_thread::sleep_for(std::chrono::milliseconds(current_operation_delay));
-					number_of_array_access++;
-					number_of_comparisons++;
 				}
 				else
 				{
@@ -473,9 +476,10 @@ namespace Gameplay
 
 			}
 
-			std::swap(sticks[i + 1], pivot);
+			std::swap(sticks[i + 1], sticks[right]);
+			number_of_array_access+=3;
+
 			updateStickPosition();
-			number_of_array_access++;
 
 			return i+1;
 		}
@@ -487,6 +491,11 @@ namespace Gameplay
 			int pivotIndex = Partition(left, right);
 			QuickSort(left, pivotIndex - 1);
 			QuickSort(pivotIndex + 1, right);
+
+			for (int i = left; i <= right; i++) {
+				sticks[i]->stick_view->setFillColor(collection_model->placement_position_element_color);
+				updateStickPosition();
+			}
 		}
 
 		void StickCollectionController::InPlaceMerge(int left, int mid, int right)

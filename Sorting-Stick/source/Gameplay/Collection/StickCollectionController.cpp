@@ -178,6 +178,10 @@ namespace Gameplay
 				time_complexity = "O(n Log n)";
 				sort_thread = std::thread(&StickCollectionController::ProcessMergeSort, this);
 				break;
+			case Gameplay::Collection::SortType::QUICK_SORT:
+				time_complexity = "O(n Log n)";
+				sort_thread = std::thread(&StickCollectionController::ProcessQuickSort, this);
+				break;
 			}
 		}
 
@@ -422,12 +426,67 @@ namespace Gameplay
 		{
 			if (left >= right)return;
 
-			int mid = left + (right - left)/2;
+			int mid = left + (right - left) / 2;
 
 			MergeSort(left, mid);
 			MergeSort(mid + 1, right);
 			Merge(left, mid, right);
 
+		}
+
+		void StickCollectionController::ProcessQuickSort()
+		{
+			QuickSort(0, sticks.size() - 1);
+			SetCompletedColor();
+		}
+
+		int StickCollectionController::Partition(int left, int right)
+		{
+			SoundService* sound = Global::ServiceLocator::getInstance()->getSoundService();
+
+			sticks[right]->stick_view->setFillColor(collection_model->selected_element_color);
+
+			int i = left - 1;
+			Stick* pivot = sticks[sticks.size() - 1];
+			for (int j = left; j <= right - 1;j++)
+			{
+				sticks[j]->stick_view->setFillColor(collection_model->selected_element_color);
+
+				number_of_array_access++;
+				number_of_comparisons++;
+
+				if (sticks[i]->data <= pivot->data)
+				{
+					i++;
+					std::swap(sticks[i], sticks[j]);
+					updateStickPosition();
+					sound->playSound(SoundType::COMPARE_SFX);
+					std::this_thread::sleep_for(std::chrono::milliseconds(current_operation_delay));
+					number_of_array_access++;
+					number_of_comparisons++;
+				}
+				else
+				{
+					sticks[j]->stick_view->setFillColor(collection_model->element_color);
+
+				}
+
+			}
+
+			std::swap(sticks[i + 1], pivot);
+			updateStickPosition();
+			number_of_array_access++;
+
+			return i+1;
+		}
+
+		void StickCollectionController::QuickSort(int left, int right)
+		{
+			if (left >= right)return;
+
+			int pivotIndex = Partition(left, right);
+			QuickSort(left, pivotIndex - 1);
+			QuickSort(pivotIndex + 1, right);
 		}
 
 		void StickCollectionController::InPlaceMerge(int left, int mid, int right)

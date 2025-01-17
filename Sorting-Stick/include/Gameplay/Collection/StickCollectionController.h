@@ -70,6 +70,8 @@ namespace Gameplay
 
             void ProcessRadixSort();
             void CountSort(int exponent);
+            void RadixSort();
+
             void SetCompletedColor();
 
         public:
